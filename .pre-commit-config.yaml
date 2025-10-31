@@ -11,6 +11,6 @@ repos:
     hooks:
       - id: dotnet-format
         name: dotnet format
-        entry: dotnet format
+        entry: dotnet format Garage.sln
         language: system
-        types: [c#]
+        pass_filenames: false

@@ -16,8 +16,8 @@ namespace Garage.Infrastructure
             {
                 options.UseSqlServer(connectionString);
             });
-            
+
             services.AddDbContext<GarageContext>(config);
-        } 
+        }
     }
 }

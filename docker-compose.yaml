@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
 
   api:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     ports:
@@ -52,7 +52,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     container_name: garage_migrations
     entrypoint: ["/bin/bash", "scripts/apply-migrations.sh"]
-    
+
 
 volumes:
   sqlserver_data:
