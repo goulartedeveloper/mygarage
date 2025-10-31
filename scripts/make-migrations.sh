@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+PROJECT_DEFAULT="src/Garage.Infrastructure/Garage.Infrastructure.csproj"
+STARTUP_DEFAULT="src/Garage.Api/Garage.Api.csproj"
+CONTEXT_DEFAULT="GarageContext"
+
+dotnet ef migrations add $1 --project "$PROJECT_DEFAULT" --startup-project "$STARTUP_DEFAULT" --context "$CONTEXT_DEFAULT"

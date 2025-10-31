@@ -14,7 +14,7 @@ namespace Garage.Infrastructure
 
             var config = new Action<DbContextOptionsBuilder>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseNpgsql(connectionString);
             });
 
             services.AddDbContext<GarageContext>(config);

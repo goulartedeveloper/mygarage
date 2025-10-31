@@ -1,28 +1,49 @@
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
+WORKDIR /app
 
-COPY ["src/Garage.Api/Garage.Api.csproj", "src/Garage.Api/"]
-COPY ["workers/Garage.Worker/Garage.Worker.csproj", "workers/Garage.Worker/"]
+# Copia o solution e todos os csproj
+COPY *.sln ./
+COPY src/ ./src/
+COPY workers/ ./workers/
+COPY tests/ ./tests/
 
-RUN dotnet restore "src/Garage.Api/Garage.Api.csproj"
-RUN dotnet restore "workers/Garage.Worker/Garage.Worker.csproj"
+# Restaura dependências
+RUN dotnet restore
 
+# Copia o restante do código
 COPY . .
 
-COPY appsettings.json src/Garage.Api/appsettings.json
-COPY appsettings.json workers/Garage.Worker/appsettings.json
+# Publica a solution inteira para uma única pasta
+RUN dotnet publish -c Release -o /app/publish
 
-COPY scripts/apply-migrations.sh scripts/apply-migrations.sh
+# Permite executar script de migrations
 RUN chmod +x scripts/apply-migrations.sh
 
-RUN dotnet publish "src/Garage.Api/Garage.Api.csproj" -c Release -o /app/api /p:UseAppHost=false
-RUN dotnet publish "workers/Garage.Worker/Garage.Worker.csproj" -c Release -o /app/worker /p:UseAppHost=false
+# Instalar dotnet-ef global
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
 
+# Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-COPY --from=build /app/api /app/api
-COPY --from=build /app/worker /app/worker
+COPY --from=build /app/publish ./
+COPY --from=build /app/src ./src
+COPY --from=build /app/workers ./workers
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/tests ./tests/
+COPY --from=build /app/*.sln ./
 
-EXPOSE 80
-ENV ASPNETCORE_URLS="http://+:80"
+EXPOSE 5001
+
+# Migrations stage
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS migrations
+WORKDIR /app
+
+# Copia toda a estrutura
+COPY --from=build /app ./
+
+# Garante que dotnet-ef está disponível
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"

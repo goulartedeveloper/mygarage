@@ -50,7 +50,10 @@ namespace Garage.Domain.Services
 
         public async Task Update(VehicleModel vehicle)
         {
-            var vehicleEntity = await _context.Vehicles.FindAsync(vehicle.Id);
+            var vehicleEntity = await _context.Vehicles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == vehicle.Id);
+
             if (vehicleEntity is not null)
             {
                 vehicleEntity = vehicle.Adapt<Vehicle>();

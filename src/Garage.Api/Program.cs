@@ -1,3 +1,4 @@
+using System;
 using Garage.Domain;
 using Garage.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -19,8 +20,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.MapControllers();
 

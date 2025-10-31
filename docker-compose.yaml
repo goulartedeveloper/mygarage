@@ -1,59 +1,81 @@
 version: '3.8'
 
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+  postgres:
+    image: postgres:16-alpine
+    platform: linux/arm64
+    env_file:
+      - .env
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=Password1
-      - MSSQL_PID=Developer
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - "1433:1433"
+      - "${POSTGRES_PORT}:5432"
     volumes:
-      - sqlserver_data:/var/opt/mssql
-    container_name: garage_sqlserver
+      - postgres_data:/var/lib/postgresql/data
+    container_name: garage_postgres
     restart: unless-stopped
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:80"
-    depends_on:
-      - sqlserver
-      - migrations
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    command: ["dotnet", "Garage.Api.dll"]
-    container_name: garage_api
-    working_dir: /app/api
-
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - sqlserver
-      - migrations
-      - api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    container_name: garage_worker
-    command: ["dotnet", "Garage.Worker.dll"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
 
   migrations:
     build:
       context: .
       dockerfile: Dockerfile
-    depends_on:
-      - sqlserver
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      target: migrations
+    platform: linux/arm64
     container_name: garage_migrations
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
+    depends_on:
+      postgres:
+        condition: service_healthy
     entrypoint: ["/bin/bash", "scripts/apply-migrations.sh"]
+    restart: "no"
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    platform: linux/arm64
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    command: ["dotnet", "Garage.Api.dll"]
+    container_name: garage_api
+    working_dir: /app
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    platform: linux/arm64
+    env_file:
+      - .env
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    container_name: garage_worker
+    command: ["dotnet", "Garage.Worker.dll"]
+    working_dir: /app
+    restart: unless-stopped
 
 volumes:
-  sqlserver_data:
+  postgres_data:
     driver: local

@@ -107,8 +107,6 @@ _ReSharper*/
 *.docstates
 
 # Local development files
-.env
-.env.*
 .secret
 secrets.json
 appsettings.Local.json
@@ -130,9 +128,6 @@ BenchmarkDotNet.Artifacts/
 .publishsettings
 *.azurePubxml
 PublishProfiles/
-
-# Entity Framework Migrations Snapshots
-Migrations/
 
 # Other IDEs
 .idea/
