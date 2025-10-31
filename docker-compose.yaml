@@ -22,6 +22,8 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    networks:
+      - garage-network
 
   migrations:
     build:
@@ -33,14 +35,13 @@ services:
     working_dir: /app
     env_file:
       - .env
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
     depends_on:
       postgres:
         condition: service_healthy
     entrypoint: ["/bin/bash", "scripts/apply-migrations.sh"]
     restart: "no"
+    networks:
+      - garage-network
 
   api:
     build:
@@ -55,10 +56,14 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
     command: ["dotnet", "Garage.Api.dll"]
     container_name: garage_api
     working_dir: /app
     restart: unless-stopped
+    networks:
+      - garage-network
 
   worker:
     build:
@@ -71,11 +76,37 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
     container_name: garage_worker
     command: ["dotnet", "Garage.Worker.dll"]
     working_dir: /app
     restart: unless-stopped
+    networks:
+      - garage-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - garage-network
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  garage-network:
+    driver: bridge

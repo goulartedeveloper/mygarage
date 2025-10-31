@@ -1,4 +1,3 @@
-using System;
 using Garage.Domain;
 using Garage.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructureModule(builder.Configuration);
-builder.Services.AddDomainModule();
+builder.Services.AddDomainModule(builder.Configuration);
 
 builder.Services.AddControllers();
 
