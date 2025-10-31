@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password1
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    container_name: garage_sqlserver
+    restart: unless-stopped
+
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    depends_on:
+      - sqlserver
+      - migrations
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    command: ["dotnet", "Garage.Api.dll"]
+    container_name: garage_api
+    working_dir: /app/api
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - sqlserver
+      - migrations
+      - api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    container_name: garage_worker
+    command: ["dotnet", "Garage.Worker.dll"]
+
+  migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    container_name: garage_migrations
+    entrypoint: ["/bin/bash", "scripts/apply-migrations.sh"]
+    
+
+volumes:
+  sqlserver_data:
+    driver: local
