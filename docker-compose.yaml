@@ -1,5 +1,12 @@
 version: '3.8'
 
+x-build: &build
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+    target: runtime
+
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -44,10 +51,7 @@ services:
       - garage-network
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
+    <<: *build
     platform: linux/arm64
     ports:
       - "5001:5001"
@@ -66,10 +70,7 @@ services:
       - garage-network
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
+    <<: *build
     platform: linux/arm64
     env_file:
       - .env

@@ -24,6 +24,7 @@ namespace Garage.Domain
                 .CreateLogger();
 
             services.AddScoped<IVehicleService, VehicleService>();
+
             services.AddScoped<IValidator<Models.VehicleModel>, VehicleValidator>();
 
             var rabbitMQ = configuration.GetConnectionString("RabbitMQ");
@@ -31,16 +32,16 @@ namespace Garage.Domain
             if (isWorker)
             {
                 services.AddRebus(config => config
-                .Logging(l => l.Serilog())
-                .Transport(t => t.UseRabbitMq(rabbitMQ, RouterKeys.VehicleCreatedKey)));
+                    .Logging(l => l.Serilog())
+                    .Transport(t => t.UseRabbitMq(rabbitMQ, RouterKeys.VehicleCreatedKey)));
                 services.AutoRegisterHandlersFromAssemblyOf<VehicleCreatedHandle>();
             }
             else
             {
                 services.AddRebus(config => config
-                .Logging(l => l.Serilog())
-                .Routing(r => r.TypeBased().Map<VehicleCreatedMessage>(RouterKeys.VehicleCreatedKey))
-                .Transport(t => t.UseRabbitMqAsOneWayClient(rabbitMQ)));
+                    .Logging(l => l.Serilog())
+                    .Routing(r => r.TypeBased().Map<VehicleCreatedMessage>(RouterKeys.VehicleCreatedKey))
+                    .Transport(t => t.UseRabbitMqAsOneWayClient(rabbitMQ)));
             }
         }
     }

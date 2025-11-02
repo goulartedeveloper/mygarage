@@ -20,6 +20,10 @@ namespace Garage.Domain.Validators
                 .NotEmpty()
                 .WithMessage("Model is required.");
 
+            RuleFor(vehicle => vehicle.Color)
+                .NotEmpty()
+                .WithMessage("Color is required.");
+
             RuleFor(vehicle => vehicle.Year)
                 .InclusiveBetween(1886, DateTime.Now.Year)
                 .WithMessage("Year must be between 1886 and the current year.");

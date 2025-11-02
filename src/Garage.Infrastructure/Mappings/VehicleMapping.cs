@@ -27,12 +27,19 @@ public class VehicleMapping : IEntityTypeConfiguration<Vehicle>
             .IsRequired()
             .HasMaxLength(20);
 
+        builder.Property(v => v.Color)
+            .IsRequired()
+            .HasMaxLength(20);
+
         builder.Property(v => v.CreatedAt)
             .IsRequired()
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("now()");
 
         builder.Property(v => v.UpdatedAt)
             .IsRequired()
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("now()");
+
+        builder.HasIndex(v => v.Plate)
+            .IsUnique();
     }
 }

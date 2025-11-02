@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using FluentValidation;
 using Garage.Domain.Interfaces;
 using Garage.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,11 +9,12 @@ namespace Garage.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VehicleController : ControllerBase
+    public class VehicleController : BaseController<VehicleModel>
     {
         private readonly IVehicleService _vehicleService;
 
-        public VehicleController(IVehicleService vehicleService)
+        public VehicleController(IVehicleService vehicleService, IValidator<VehicleModel> validator)
+         : base(validator)
         {
             _vehicleService = vehicleService;
         }
@@ -20,15 +22,25 @@ namespace Garage.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] VehicleModel vehicle)
         {
+            var action = await ValidateAsync(vehicle);
+
+            if (action is not null)
+                return action;
+
             await _vehicleService.Create(vehicle);
-            return NoContent();
+            return Created();
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] VehicleModel vehicle)
         {
+            var action = await ValidateAsync(vehicle);
+
+            if (action is not null)
+                return action;
+
             await _vehicleService.Update(vehicle);
-            return NoContent();
+            return Accepted();
         }
 
         [HttpDelete("{id}")]
