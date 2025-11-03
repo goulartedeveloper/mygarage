@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,6 +9,7 @@ using Garage.Domain.Models;
 using Garage.Infrastructure.Database;
 using Garage.Tests.Data;
 using Garage.Tests.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Garage.Tests.Integration.Controllers
@@ -97,6 +99,88 @@ namespace Garage.Tests.Integration.Controllers
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(result);
             Assert.Contains(result, r => r.Field == "Plate" && r.Message == "Already exists vehicle with this plate.");
+        }
+
+        [Fact]
+        public async Task Delete_ExistVehicle_ReturnNoContent()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var vehicle = DataGenerator.CreateVehicle();
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var response = await _client.DeleteAsync($"{url}/{vehicle.Id}");
+            var deletedVehicle = _context.Vehicles.FirstOrDefault(x => x.Id == vehicle.Id);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Null(deletedVehicle);
+        }
+
+        [Fact]
+        public async Task GetAll_VehiclesExist_ReturnOk()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var vehicle = DataGenerator.CreateVehicle();
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var response = await _client.GetAsync(url);
+            var vehicles = await response.Content.ReadFromJsonAsync<VehicleModel[]>();
+            var count = await _context.Vehicles.CountAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(vehicles);
+            Assert.Equal(count, vehicles.Length);
+        }
+
+        [Fact]
+        public async Task Put_ValidModel_ReturnAccepted()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var vehicle = DataGenerator.CreateVehicle();
+            vehicle.Year = 2000;
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+            var model = DataGenerator.CreateVehicleModel(plate: vehicle.Plate);
+            model.Id = vehicle.Id;
+            model.Year = 2020;
+
+            // Act
+            var response = await _client.PutAsJsonAsync(url, model);
+            var getResponse = await _client.GetAsync($"{url}/{vehicle.Id}");
+            var updatedVehicle = await getResponse.Content.ReadFromJsonAsync<VehicleModel>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.NotNull(updatedVehicle);
+            Assert.Equal(model.Model, updatedVehicle.Model);
+            Assert.Equal(model.Plate, updatedVehicle.Plate);
+            Assert.Equal(model.Year, updatedVehicle.Year);
+        }
+
+        [Fact]
+        public async Task Put_InvalidModel_ReturnBadRequest()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var model = DataGenerator.CreateVehicleModel();
+            model.Id = Guid.NewGuid();
+
+            // Act
+            var response = await _client.PutAsJsonAsync(url, model);
+            var result = await response.Content.ReadFromJsonAsync<ValidationResponse[]>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(result);
+            Assert.Contains(result, r => r.Field == "Id" && r.Message == "Vehicle not found with this id.");
         }
     }
 }

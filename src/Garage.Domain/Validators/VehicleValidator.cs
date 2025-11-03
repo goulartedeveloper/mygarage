@@ -21,10 +21,8 @@ namespace Garage.Domain.Validators
             RuleFor(vehicle => vehicle.Plate)
                 .MustAsync(async (plate, cancellation) =>
                     !await context.Vehicles.AnyAsync(v => v.Plate == plate, cancellation))
-                .When(vehicle => !string.IsNullOrWhiteSpace(vehicle.Plate))
+                .When(vehicle => !string.IsNullOrWhiteSpace(vehicle.Plate) && vehicle.Id == Guid.Empty)
                 .WithMessage("Already exists vehicle with this plate.");
-
-
 
             RuleFor(vehicle => vehicle.Model)
                 .NotEmpty()
@@ -37,6 +35,13 @@ namespace Garage.Domain.Validators
             RuleFor(vehicle => vehicle.Year)
                 .InclusiveBetween(1886, DateTime.Now.Year)
                 .WithMessage("Year must be between 1886 and the current year.");
+
+            RuleFor(vehicle => vehicle.Id)
+                .MustAsync(async (id, cancellation) =>
+                    await context.Vehicles.AnyAsync(v => v.Id == id, cancellation))
+                .When(vehicle => vehicle.Id != Guid.Empty)
+                .WithMessage("Vehicle not found with this id.");
+
         }
     }
 }

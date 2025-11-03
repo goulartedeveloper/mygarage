@@ -62,12 +62,11 @@ namespace Garage.Domain.Services
         public async Task Update(VehicleModel vehicle)
         {
             var vehicleEntity = await _context.Vehicles
-                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == vehicle.Id);
 
             if (vehicleEntity is not null)
             {
-                vehicleEntity = vehicle.Adapt<Vehicle>();
+                vehicle.Adapt(vehicleEntity);
                 _context.Vehicles.Update(vehicleEntity);
                 await _context.SaveChangesAsync();
             }
