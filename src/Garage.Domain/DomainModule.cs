@@ -10,6 +10,8 @@ using Garage.Domain.Common;
 using Garage.Domain.Handlers.Vehicle;
 using Rebus.Routing.TypeBased;
 using Garage.Domain.Messages.Vehicle;
+using System;
+using Rebus.Transport.InMem;
 
 namespace Garage.Domain
 {
@@ -19,6 +21,8 @@ namespace Garage.Domain
             IConfiguration configuration,
             bool isWorker = false)
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateLogger();
@@ -38,10 +42,21 @@ namespace Garage.Domain
             }
             else
             {
-                services.AddRebus(config => config
-                    .Logging(l => l.Serilog())
-                    .Routing(r => r.TypeBased().Map<VehicleCreatedMessage>(RouterKeys.VehicleCreatedKey))
-                    .Transport(t => t.UseRabbitMqAsOneWayClient(rabbitMQ)));
+                if (environment == "Test" || string.IsNullOrEmpty(rabbitMQ))
+                {
+                    var network = new InMemNetwork();
+                    services.AddRebus(config => config
+                        .Logging(l => l.Serilog())
+                        .Routing(r => r.TypeBased().Map<VehicleCreatedMessage>(RouterKeys.VehicleCreatedKey))
+                        .Transport(t => t.UseInMemoryTransportAsOneWayClient(network)));
+                }
+                else
+                {
+                    services.AddRebus(config => config
+                        .Logging(l => l.Serilog())
+                        .Routing(r => r.TypeBased().Map<VehicleCreatedMessage>(RouterKeys.VehicleCreatedKey))
+                        .Transport(t => t.UseRabbitMqAsOneWayClient(rabbitMQ)));
+                }
             }
         }
     }

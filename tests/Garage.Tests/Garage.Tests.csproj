@@ -8,7 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bogus" Version="35.6.5" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.10" />
@@ -24,6 +26,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Garage.Domain\Garage.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Garage.Api\Garage.Api.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
