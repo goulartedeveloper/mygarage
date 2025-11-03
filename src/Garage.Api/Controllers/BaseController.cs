@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
+using Garage.Api.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Garage.Api.Controllers
@@ -19,7 +20,13 @@ namespace Garage.Api.Controllers
             var result = await _validator.ValidateAsync(model);
 
             if (!result.IsValid)
-                return BadRequest(result.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }));
+                return BadRequest(result.Errors.Select(e =>
+                    new ValidationResponse
+                    {
+                        Field = e.PropertyName,
+                        Message = e.ErrorMessage
+                    }
+                ));
 
             return null;
         }

@@ -3,9 +3,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Garage.Api.Responses;
 using Garage.Domain.Models;
 using Garage.Infrastructure.Database;
-using Garage.Infrastructure.Entities;
 using Garage.Tests.Data;
 using Garage.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +56,47 @@ namespace Garage.Tests.Integration.Controllers
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(vehicleModel);
+        }
+
+        [Fact]
+        public async Task Post_InvalidModel_ReturnBadRequest()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var model = new VehicleModel();
+
+            // Act
+            var response = await _client.PostAsJsonAsync(url, model);
+            var result = await response.Content.ReadFromJsonAsync<ValidationResponse[]>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(result);
+            Assert.Contains(result, r => r.Field == "Make" && r.Message == "Make is required.");
+            Assert.Contains(result, r => r.Field == "Plate" && r.Message == "Plate is required.");
+            Assert.Contains(result, r => r.Field == "Model" && r.Message == "Model is required.");
+            Assert.Contains(result, r => r.Field == "Color" && r.Message == "Color is required.");
+            Assert.Contains(result, r => r.Field == "Year" && r.Message == "Year must be between 1886 and the current year.");
+        }
+
+        [Fact]
+        public async Task Post_DuplicatePlate_ReturnBadRequest()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var existingVehicle = DataGenerator.CreateVehicle();
+            _context.Vehicles.Add(existingVehicle);
+            await _context.SaveChangesAsync();
+            var model = DataGenerator.CreateVehicleModel(plate: existingVehicle.Plate);
+
+            // Act
+            var response = await _client.PostAsJsonAsync(url, model);
+            var result = await response.Content.ReadFromJsonAsync<ValidationResponse[]>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(result);
+            Assert.Contains(result, r => r.Field == "Plate" && r.Message == "Already exists vehicle with this plate.");
         }
     }
 }

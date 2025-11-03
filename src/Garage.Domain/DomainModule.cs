@@ -42,7 +42,7 @@ namespace Garage.Domain
             }
             else
             {
-                if (environment == "Test" || string.IsNullOrEmpty(rabbitMQ))
+                if (environment == "Testing" || string.IsNullOrEmpty(rabbitMQ))
                 {
                     var network = new InMemNetwork();
                     services.AddRebus(config => config

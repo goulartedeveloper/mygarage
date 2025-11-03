@@ -28,7 +28,6 @@ namespace Garage.Tests.Infrastructure
 
             builder.ConfigureServices(services =>
             {
-                // Remove o contexto padrão registrado pelo projeto
                 var descriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(DbContextOptions<GarageContext>));
                 if (descriptor != null)
@@ -38,10 +37,6 @@ namespace Garage.Tests.Infrastructure
                 {
                     options.UseNpgsql(Configuration.GetConnectionString("GarageDatabase"));
                 });
-
-
-
-                // Adiciona um contexto apontando para um banco de teste isolado
             });
         }
 
