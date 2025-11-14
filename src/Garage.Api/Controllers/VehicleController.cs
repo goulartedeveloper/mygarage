@@ -3,11 +3,13 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Garage.Domain.Interfaces;
 using Garage.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Garage.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class VehicleController : BaseController<VehicleModel>
     {

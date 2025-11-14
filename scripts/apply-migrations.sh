@@ -3,7 +3,7 @@
 PROJECT_DEFAULT="src/Garage.Infrastructure/Garage.Infrastructure.csproj"
 STARTUP_DEFAULT="src/Garage.Api/Garage.Api.csproj"
 CONTEXT_DEFAULT="GarageContext"
-CONN_STRING=${ConnectionStrings__GarageDatabase}
+CONN_STRING=${ConnectionStrings__GarageDatabase:-"Server=localhost;Port=5432;Database=GarageDb;User Id=user;Password=Password1!;"}
 
 dotnet ef database update \
     --project "$PROJECT_DEFAULT" \

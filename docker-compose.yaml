@@ -35,7 +35,7 @@ services:
   migrations:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       target: migrations
     platform: linux/arm64
     container_name: garage_migrations

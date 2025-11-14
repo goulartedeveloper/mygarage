@@ -4,11 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Garage.Infrastructure.Entities;
 using Garage.Infrastructure.Mappings;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Garage.Infrastructure.Database;
 
-public class GarageContext : DbContext
+public class GarageContext : IdentityDbContext<ApplicationUser>
 {
     public GarageContext(DbContextOptions<GarageContext> options)
         : base(options)
@@ -20,6 +21,7 @@ public class GarageContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new VehicleMapping());
+        base.OnModelCreating(modelBuilder);
     }
 
     public override int SaveChanges()
