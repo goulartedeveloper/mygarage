@@ -8,7 +8,7 @@ public class VehicleMapping : IEntityTypeConfiguration<Vehicle>
 {
     public void Configure(EntityTypeBuilder<Vehicle> builder)
     {
-        builder.ToTable("Vehicles", "Garage");
+        builder.ToTable("Vehicles");
 
         builder.HasKey(v => v.Id);
 
@@ -39,7 +39,11 @@ public class VehicleMapping : IEntityTypeConfiguration<Vehicle>
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        builder.HasIndex(v => v.Plate)
+        builder.Property(v => v.UserId)
+            .IsRequired()
+            .HasMaxLength(36);
+
+        builder.HasIndex(v => new { v.Plate, v.UserId })
             .IsUnique();
     }
 }

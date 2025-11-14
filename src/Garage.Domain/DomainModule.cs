@@ -40,7 +40,7 @@ namespace Garage.Domain
             }
             else
             {
-                if (environment == "Testing")
+                if (environment == "Testing" || environment == "Development")
                 {
                     var network = new InMemNetwork();
                     services.AddRebus(config => config

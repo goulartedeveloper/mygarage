@@ -1,6 +1,6 @@
 namespace Garage.Infrastructure.Entities;
 
-public class Vehicle : Base
+public class Vehicle : UserBase
 {
     public string Make { get; set; }
     public string Model { get; set; }

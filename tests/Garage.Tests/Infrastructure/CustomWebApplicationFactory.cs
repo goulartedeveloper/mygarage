@@ -36,12 +36,13 @@ namespace Garage.Tests.Infrastructure
             return host;
         }
 
-        public string GenerateToken()
+        public string GenerateToken(string userId)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, "applicationuser-test"),
-                new Claim(JwtRegisteredClaimNames.UniqueName, "applicationuser-test")
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.UniqueName, "applicationuser-test"),
+                new Claim(ClaimTypes.NameIdentifier, userId)
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]));

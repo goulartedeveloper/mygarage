@@ -17,7 +17,7 @@ namespace Garage.Tests.Data
                 .Generate();
         }
 
-        public static Vehicle CreateVehicle(string plate = null)
+        public static Vehicle CreateVehicle(string userId, string plate = null)
         {
             return new Faker<Vehicle>()
                 .RuleFor(v => v.Plate, f => plate ?? f.Vehicle.Vin().Substring(0, 7).ToUpper())
@@ -25,6 +25,7 @@ namespace Garage.Tests.Data
                 .RuleFor(v => v.Model, f => f.Vehicle.Model())
                 .RuleFor(v => v.Year, f => f.Date.Past(30).Year)
                 .RuleFor(v => v.Color, f => f.Commerce.Color())
+                .RuleFor(v => v.UserId, _ => userId)
                 .Generate();
         }
     }

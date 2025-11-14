@@ -20,13 +20,14 @@ namespace Garage.Tests.Integration.Controllers
         private readonly GarageContext _context;
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
+        private string _userId = Guid.NewGuid().ToString();
 
         public VehicleControllerTests(CustomWebApplicationFactory factory)
         {
             _factory = factory;
             _context = factory.Services.GetRequiredService<GarageContext>();
             _client = factory.CreateClient();
-            var token = factory.GenerateToken();
+            var token = factory.GenerateToken(_userId);
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
@@ -52,7 +53,7 @@ namespace Garage.Tests.Integration.Controllers
         {
             // Arrange
             var url = "api/vehicle";
-            var vehicle = DataGenerator.CreateVehicle();
+            var vehicle = DataGenerator.CreateVehicle(_userId);
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();
 
@@ -91,7 +92,7 @@ namespace Garage.Tests.Integration.Controllers
         {
             // Arrange
             var url = "api/vehicle";
-            var existingVehicle = DataGenerator.CreateVehicle();
+            var existingVehicle = DataGenerator.CreateVehicle(_userId);
             _context.Vehicles.Add(existingVehicle);
             await _context.SaveChangesAsync();
             var model = DataGenerator.CreateVehicleModel(plate: existingVehicle.Plate);
@@ -111,7 +112,7 @@ namespace Garage.Tests.Integration.Controllers
         {
             // Arrange
             var url = "api/vehicle";
-            var vehicle = DataGenerator.CreateVehicle();
+            var vehicle = DataGenerator.CreateVehicle(_userId);
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();
 
@@ -129,7 +130,7 @@ namespace Garage.Tests.Integration.Controllers
         {
             // Arrange
             var url = "api/vehicle";
-            var vehicle = DataGenerator.CreateVehicle();
+            var vehicle = DataGenerator.CreateVehicle(_userId);
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();
 
@@ -149,7 +150,7 @@ namespace Garage.Tests.Integration.Controllers
         {
             // Arrange
             var url = "api/vehicle";
-            var vehicle = DataGenerator.CreateVehicle();
+            var vehicle = DataGenerator.CreateVehicle(_userId);
             vehicle.Year = 2000;
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();

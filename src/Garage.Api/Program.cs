@@ -10,6 +10,9 @@ using System.Text;
 using Garage.Infrastructure.Entities;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using Garage.Infrastructure.Interfaces;
+using Garage.Api.Common;
+using Garage.Infrastructure.Database;
 
 namespace Garage.Api;
 
@@ -25,6 +28,17 @@ public class Program
             var path = Directory.GetCurrentDirectory();
             builder.Configuration.AddJsonFile(Path.Combine(path, "appsettings.json"));
         }
+        else if (builder.Environment.IsDevelopment())
+        {
+            var root = Directory.GetParent(Directory.GetCurrentDirectory())?.Parent;
+            var externalPath = Path.Combine(root!.FullName, "appsettings.json");
+
+            builder.Configuration
+                .AddJsonFile(externalPath, optional: false, reloadOnChange: true);
+        }
+
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
         builder.Services.AddInfrastructureModule(builder.Configuration);
         builder.Services.AddDomainModule(builder.Configuration, builder.Environment.EnvironmentName);
@@ -35,7 +49,7 @@ public class Program
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<Garage.Infrastructure.Database.GarageContext>()
+            .AddEntityFrameworkStores<GarageContext>()
             .AddDefaultTokenProviders();
 
         builder.Services.AddAuthentication(options =>
