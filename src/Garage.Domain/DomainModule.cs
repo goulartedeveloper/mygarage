@@ -10,7 +10,6 @@ using Garage.Domain.Common;
 using Garage.Domain.Handlers.Vehicle;
 using Rebus.Routing.TypeBased;
 using Garage.Domain.Messages.Vehicle;
-using System;
 using Rebus.Transport.InMem;
 
 namespace Garage.Domain
