@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Garage.Api.Responses;
@@ -18,11 +19,15 @@ namespace Garage.Tests.Integration.Controllers
     {
         private readonly GarageContext _context;
         private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
 
         public VehicleControllerTests(CustomWebApplicationFactory factory)
         {
+            _factory = factory;
             _context = factory.Services.GetRequiredService<GarageContext>();
             _client = factory.CreateClient();
+            var token = factory.GenerateToken();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
         [Fact]
@@ -181,6 +186,21 @@ namespace Garage.Tests.Integration.Controllers
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(result);
             Assert.Contains(result, r => r.Field == "Id" && r.Message == "Vehicle not found with this id.");
+        }
+
+        [Fact]
+        public async Task GetAll_InvalidToken_ReturnUnauthorized()
+        {
+            // Arrange
+            var url = "api/vehicle";
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "invalid_token");
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }
 }

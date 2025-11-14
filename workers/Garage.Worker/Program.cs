@@ -7,7 +7,7 @@ using Garage.Infrastructure;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddDomainModule(builder.Configuration, isWorker: true);
+builder.Services.AddDomainModule(builder.Configuration, builder.Environment.EnvironmentName, isWorker: true);
 builder.Services.AddInfrastructureModule(builder.Configuration);
 
 builder.Services.AddHostedService<Worker>();

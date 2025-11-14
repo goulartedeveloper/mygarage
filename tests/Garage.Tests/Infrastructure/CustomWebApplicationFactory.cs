@@ -7,36 +7,30 @@ using Microsoft.EntityFrameworkCore;
 using Garage.Infrastructure.Database;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System;
 
 namespace Garage.Tests.Infrastructure
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
+        private IConfiguration Configuration { get; set; }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Testing");
 
-            var Configuration = new ConfigurationBuilder()
+            Configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables()
                 .Build();
 
             builder.ConfigureAppConfiguration((context, config) =>
             {
-                config.AddConfiguration(Configuration);
-            });
-
-            builder.ConfigureServices(services =>
-            {
-                var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<GarageContext>));
-                if (descriptor != null)
-                    services.Remove(descriptor);
-
-                services.AddDbContext<GarageContext>(options =>
-                {
-                    options.UseNpgsql(Configuration.GetConnectionString("GarageDatabase"));
-                });
+                config.AddEnvironmentVariables();
             });
         }
 
@@ -44,6 +38,28 @@ namespace Garage.Tests.Infrastructure
         {
             var host = base.CreateHost(builder);
             return host;
+        }
+
+        public string GenerateToken()
+        {
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, "applicationuser-test"),
+                new Claim(JwtRegisteredClaimNames.UniqueName, "applicationuser-test")
+            };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: Configuration["Jwt:Issuer"],
+                audience: Configuration["Jwt:Issuer"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(12),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

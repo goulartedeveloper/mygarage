@@ -19,10 +19,9 @@ namespace Garage.Domain
     {
         public static void AddDomainModule(this IServiceCollection services,
             IConfiguration configuration,
+            string environment,
             bool isWorker = false)
         {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateLogger();
@@ -42,7 +41,7 @@ namespace Garage.Domain
             }
             else
             {
-                if (environment == "Testing" || string.IsNullOrEmpty(rabbitMQ))
+                if (environment == "Testing")
                 {
                     var network = new InMemNetwork();
                     services.AddRebus(config => config

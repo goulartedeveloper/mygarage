@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Garage.Infrastructure.Entities;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace Garage.Api;
 
@@ -16,16 +18,21 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
         builder.Services.AddOpenApi();
 
+        if (builder.Environment.EnvironmentName == "Testing")
+        {
+            var path = Directory.GetCurrentDirectory();
+            builder.Configuration.AddJsonFile(Path.Combine(path, "appsettings.json"));
+        }
+
         builder.Services.AddInfrastructureModule(builder.Configuration);
-        builder.Services.AddDomainModule(builder.Configuration);
+        builder.Services.AddDomainModule(builder.Configuration, builder.Environment.EnvironmentName);
 
         builder.Services.AddControllers();
 
-        var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_key_123!";
-        var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "GarageIssuer";
+        var jwtKey = builder.Configuration["Jwt:Key"];
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<Garage.Infrastructure.Database.GarageContext>()
