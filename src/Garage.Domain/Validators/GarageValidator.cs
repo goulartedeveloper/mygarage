@@ -12,6 +12,7 @@ namespace Garage.Domain.Validators
         {
             RuleFor(g => g.Name)
                 .NotEmpty()
+                .WithMessage("Name is required.")
                 .MaximumLength(200)
                 .MinimumLength(4)
                 .WithMessage("Name should have between 4 and 200 characters.");

@@ -30,8 +30,8 @@ public class Program
         }
         else if (builder.Environment.IsDevelopment())
         {
-            var root = Directory.GetParent(Directory.GetCurrentDirectory())?.Parent;
-            var externalPath = Path.Combine(root!.FullName, "appsettings.json");
+            var root = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
+            var externalPath = Path.Combine(root.FullName, "appsettings.json");
 
             builder.Configuration
                 .AddJsonFile(externalPath, optional: false, reloadOnChange: true);

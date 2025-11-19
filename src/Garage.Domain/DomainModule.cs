@@ -6,11 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Rebus.Config;
 using Microsoft.Extensions.Configuration;
-using Garage.Domain.Common;
-using Garage.Domain.Handlers.Vehicle;
 using Rebus.Routing.TypeBased;
 using Garage.Domain.Messages.Vehicle;
 using Rebus.Transport.InMem;
+using Garage.Domain.Common;
 
 namespace Garage.Domain
 {
@@ -30,6 +29,7 @@ namespace Garage.Domain
 
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IGarageService, GarageService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             services.AddScoped<IValidator<Models.VehicleModel>, VehicleValidator>();
             services.AddScoped<IValidator<Models.GarageModel>, GarageValidator>();
@@ -39,7 +39,8 @@ namespace Garage.Domain
             if (isTesting || isDevelopment)
             {
                 var network = new InMemNetwork();
-                services.AddRebus(config => config
+
+                services.AddRebus((config, provider) => config
                     .Logging(l => l.Serilog())
                     .Transport(t => t.UseInMemoryTransport(network, "garage"))
                     .Routing(r => r.TypeBased()
@@ -53,7 +54,12 @@ namespace Garage.Domain
             {
                 services.AddRebus(config => config
                     .Logging(l => l.Serilog())
-                    .Transport(t => t.UseRabbitMqAsOneWayClient(rabbitMQ)));
+                    .Transport(t => t.UseRabbitMqAsOneWayClient(rabbitMQ))
+                    .Routing(r => r.TypeBased()
+                        .Map<VehicleCreatedMessage>(RouterKeys.VehicleCreatedKey)
+                        .Map<VehicleUpdatedMessage>(RouterKeys.VehicleUpdatedKey)
+                        .Map<VehicleDeletedMessage>(RouterKeys.VehicleDeletedKey)
+                    ));
             }
 
             if (isWorker || isDevelopment)

@@ -12,16 +12,18 @@ namespace Garage.Infrastructure.Database;
 
 public class GarageContext : IdentityDbContext<ET.ApplicationUser>
 {
-    private readonly ICurrentUser _currentUser;
+    private string _userId;
 
     public GarageContext(DbContextOptions<GarageContext> options, ICurrentUser currentUser)
         : base(options)
     {
-        _currentUser = currentUser;
+        _userId = currentUser.UserId;
     }
 
     public DbSet<ET.Vehicle> Vehicles { get; set; }
     public DbSet<ET.Garage> Garages { get; set; }
+
+    public void SetUserId(string userId) => _userId ??= userId;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,10 +31,10 @@ public class GarageContext : IdentityDbContext<ET.ApplicationUser>
         modelBuilder.ApplyConfiguration(new GarageMapping());
         base.OnModelCreating(modelBuilder);
 
-        if (!string.IsNullOrEmpty(_currentUser.UserId))
+        if (!string.IsNullOrEmpty(_userId))
         {
-            modelBuilder.Entity<ET.Vehicle>().HasQueryFilter(v => v.UserId == _currentUser.UserId);
-            modelBuilder.Entity<ET.Garage>().HasQueryFilter(g => g.UserId == _currentUser.UserId);
+            modelBuilder.Entity<ET.Vehicle>().HasQueryFilter(v => v.UserId == _userId);
+            modelBuilder.Entity<ET.Garage>().HasQueryFilter(g => g.UserId == _userId);
         }
 
         modelBuilder.HasDefaultSchema("Garage");
@@ -51,7 +53,7 @@ public class GarageContext : IdentityDbContext<ET.ApplicationUser>
 
             if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
-                    userBaseEntity.UserId = _currentUser.UserId;
+                    userBaseEntity.UserId = _userId;
         }
 
         return base.SaveChanges();
@@ -70,7 +72,7 @@ public class GarageContext : IdentityDbContext<ET.ApplicationUser>
 
             if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
-                    userBaseEntity.UserId = _currentUser.UserId;
+                    userBaseEntity.UserId = _userId;
         }
 
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -89,7 +91,7 @@ public class GarageContext : IdentityDbContext<ET.ApplicationUser>
 
             if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
-                    userBaseEntity.UserId = _currentUser.UserId;
+                    userBaseEntity.UserId = _userId;
         }
 
         return base.SaveChangesAsync(cancellationToken);
@@ -108,7 +110,7 @@ public class GarageContext : IdentityDbContext<ET.ApplicationUser>
 
             if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
-                    userBaseEntity.UserId = _currentUser.UserId;
+                    userBaseEntity.UserId = _userId;
         }
 
         return base.SaveChanges(acceptAllChangesOnSuccess);

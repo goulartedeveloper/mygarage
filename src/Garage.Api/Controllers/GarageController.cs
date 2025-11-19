@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Garage.Domain.Interfaces;
 using Garage.Domain.Models;
-using Garage.Domain.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

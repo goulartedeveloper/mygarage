@@ -2,8 +2,8 @@ using Garage.Domain.Models;
 
 namespace Garage.Domain.Messages.Vehicle
 {
-    public class VehicleUpdatedMessage : VehicleModel
+    public class VehicleUpdatedMessage : VehicleModel, IBaseMessage
     {
-
+        public string UserId { get; set; }
     }
 }

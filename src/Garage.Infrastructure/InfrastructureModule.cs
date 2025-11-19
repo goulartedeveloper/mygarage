@@ -3,6 +3,7 @@ using Garage.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Garage.Infrastructure
 {
@@ -15,6 +16,8 @@ namespace Garage.Infrastructure
             var config = new Action<DbContextOptionsBuilder>(options =>
             {
                 options.UseNpgsql(connectionString);
+                options.EnableSensitiveDataLogging();
+                options.LogTo(Console.WriteLine, LogLevel.Information);
             });
 
             services.AddDbContext<GarageContext>(config);

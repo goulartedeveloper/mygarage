@@ -19,9 +19,9 @@ Sistema para gerenciamento de veículos, desenvolvido em .NET, com arquitetura m
 
 ### Executando com Docker
 1. Build e start dos containers:
-   ```sh
-   docker-compose up --build
-   ```
+```sh
+docker-compose up --build -d
+```
 
 ## Testes
 
