@@ -12,59 +12,58 @@ namespace Garage.Api.Controllers
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
-    public class VehicleController : BaseController<VehicleModel>
+    public class GarageController : BaseController<GarageModel>
     {
-        private readonly IVehicleService _vehicleService;
+        private readonly IGarageService _garageService;
 
-        public VehicleController(IVehicleService vehicleService, IValidator<VehicleModel> validator)
-         : base(validator)
+        public GarageController(IGarageService garageService, IValidator<GarageModel> validator) : base(validator)
         {
-            _vehicleService = vehicleService;
+            _garageService = garageService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] VehicleModel vehicle)
+        public async Task<IActionResult> Create([FromBody] GarageModel garage)
         {
-            var action = await ValidateAsync(vehicle);
+            var action = await ValidateAsync(garage);
 
             if (action is not null)
                 return action;
 
-            await _vehicleService.Create(vehicle);
+            await _garageService.Create(garage);
             return Created();
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] VehicleModel vehicle)
+        public async Task<IActionResult> Update([FromBody] GarageModel garage)
         {
-            var action = await ValidateAsync(vehicle);
+            var action = await ValidateAsync(garage);
 
             if (action is not null)
                 return action;
 
-            await _vehicleService.Update(vehicle);
+            await _garageService.Update(garage);
             return Accepted();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _vehicleService.Delete(id);
+            await _garageService.Delete(id);
             return NoContent();
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var vehicle = await _vehicleService.GetById(id);
-            return Ok(vehicle);
+            var garage = await _garageService.GetById(id);
+            return Ok(garage);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var vehicles = await _vehicleService.GetAll();
-            return Ok(vehicles);
+            var garages = await _garageService.GetAll();
+            return Ok(garages);
         }
     }
 }

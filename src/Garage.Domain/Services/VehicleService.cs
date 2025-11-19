@@ -32,7 +32,7 @@ namespace Garage.Domain.Services
             _context.Vehicles.Add(vehicleEntity);
             await _context.SaveChangesAsync();
 
-            await _bus.Send(vehicle.Adapt<VehicleCreatedMessage>());
+            await _bus.Send(vehicleEntity.Adapt<VehicleCreatedMessage>());
 
             await transaction.CommitAsync();
         }
@@ -40,10 +40,17 @@ namespace Garage.Domain.Services
         public async Task Delete(Guid id)
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
+
             if (vehicle is not null)
             {
+                var transaction = await _context.Database.BeginTransactionAsync();
+
                 _context.Vehicles.Remove(vehicle);
                 await _context.SaveChangesAsync();
+
+                await _bus.Send(vehicle.Adapt<VehicleDeletedMessage>());
+
+                await transaction.CommitAsync();
             }
         }
 
@@ -62,13 +69,20 @@ namespace Garage.Domain.Services
         public async Task Update(VehicleModel vehicle)
         {
             var vehicleEntity = await _context.Vehicles
-                .FirstOrDefaultAsync(x => x.Id == vehicle.Id);
+                .FindAsync(vehicle.Id);
 
             if (vehicleEntity is not null)
             {
+                var transaction = await _context.Database.BeginTransactionAsync();
+
                 vehicle.Adapt(vehicleEntity);
                 _context.Vehicles.Update(vehicleEntity);
+
                 await _context.SaveChangesAsync();
+
+                await _bus.Send(vehicleEntity.Adapt<VehicleUpdatedMessage>());
+
+                await transaction.CommitAsync();
             }
         }
     }

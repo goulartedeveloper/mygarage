@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Garage.Infrastructure.Entities;
+using ET = Garage.Infrastructure.Entities;
 using Garage.Infrastructure.Interfaces;
 using Garage.Infrastructure.Mappings;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Garage.Infrastructure.Database;
 
-public class GarageContext : IdentityDbContext<ApplicationUser>
+public class GarageContext : IdentityDbContext<ET.ApplicationUser>
 {
     private readonly ICurrentUser _currentUser;
 
@@ -20,17 +20,19 @@ public class GarageContext : IdentityDbContext<ApplicationUser>
         _currentUser = currentUser;
     }
 
-    public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<ET.Vehicle> Vehicles { get; set; }
+    public DbSet<ET.Garage> Garages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new VehicleMapping());
+        modelBuilder.ApplyConfiguration(new GarageMapping());
         base.OnModelCreating(modelBuilder);
 
         if (!string.IsNullOrEmpty(_currentUser.UserId))
         {
-            modelBuilder.Entity<Vehicle>()
-                .HasQueryFilter(v => v.UserId == _currentUser.UserId);
+            modelBuilder.Entity<ET.Vehicle>().HasQueryFilter(v => v.UserId == _currentUser.UserId);
+            modelBuilder.Entity<ET.Garage>().HasQueryFilter(g => g.UserId == _currentUser.UserId);
         }
 
         modelBuilder.HasDefaultSchema("Garage");
@@ -40,14 +42,14 @@ public class GarageContext : IdentityDbContext<ApplicationUser>
     {
         var entries = ChangeTracker
             .Entries()
-            .Where(e => e.Entity is Base || e.Entity is UserBase);
+            .Where(e => e.Entity is ET.Base || e.Entity is ET.UserBase);
 
         foreach (var entry in entries)
         {
-            if (entry.Entity is Base baseEntity && entry.State == EntityState.Modified)
+            if (entry.Entity is ET.Base baseEntity && entry.State == EntityState.Modified)
                 baseEntity.UpdatedAt = DateTime.UtcNow;
 
-            if (entry.Entity is UserBase userBaseEntity && entry.State == EntityState.Added)
+            if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
                     userBaseEntity.UserId = _currentUser.UserId;
         }
@@ -59,14 +61,14 @@ public class GarageContext : IdentityDbContext<ApplicationUser>
     {
         var entries = ChangeTracker
             .Entries()
-            .Where(e => e.Entity is Base || e.Entity is UserBase);
+            .Where(e => e.Entity is ET.Base || e.Entity is ET.UserBase);
 
         foreach (var entry in entries)
         {
-            if (entry.Entity is Base baseEntity && entry.State == EntityState.Modified)
+            if (entry.Entity is ET.Base baseEntity && entry.State == EntityState.Modified)
                 baseEntity.UpdatedAt = DateTime.UtcNow;
 
-            if (entry.Entity is UserBase userBaseEntity && entry.State == EntityState.Added)
+            if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
                     userBaseEntity.UserId = _currentUser.UserId;
         }
@@ -78,14 +80,14 @@ public class GarageContext : IdentityDbContext<ApplicationUser>
     {
         var entries = ChangeTracker
             .Entries()
-            .Where(e => e.Entity is Base || e.Entity is UserBase);
+            .Where(e => e.Entity is ET.Base || e.Entity is ET.UserBase);
 
         foreach (var entry in entries)
         {
-            if (entry.Entity is Base baseEntity && entry.State == EntityState.Modified)
+            if (entry.Entity is ET.Base baseEntity && entry.State == EntityState.Modified)
                 baseEntity.UpdatedAt = DateTime.UtcNow;
 
-            if (entry.Entity is UserBase userBaseEntity && entry.State == EntityState.Added)
+            if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
                     userBaseEntity.UserId = _currentUser.UserId;
         }
@@ -97,14 +99,14 @@ public class GarageContext : IdentityDbContext<ApplicationUser>
     {
         var entries = ChangeTracker
             .Entries()
-            .Where(e => e.Entity is Base || e.Entity is UserBase);
+            .Where(e => e.Entity is ET.Base || e.Entity is ET.UserBase);
 
         foreach (var entry in entries)
         {
-            if (entry.Entity is Base baseEntity && entry.State == EntityState.Modified)
+            if (entry.Entity is ET.Base baseEntity && entry.State == EntityState.Modified)
                 baseEntity.UpdatedAt = DateTime.UtcNow;
 
-            if (entry.Entity is UserBase userBaseEntity && entry.State == EntityState.Added)
+            if (entry.Entity is ET.UserBase userBaseEntity && entry.State == EntityState.Added)
                 if (string.IsNullOrEmpty(userBaseEntity.UserId))
                     userBaseEntity.UserId = _currentUser.UserId;
         }

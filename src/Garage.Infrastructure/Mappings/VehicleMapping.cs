@@ -43,6 +43,13 @@ public class VehicleMapping : IEntityTypeConfiguration<Vehicle>
             .IsRequired()
             .HasMaxLength(36);
 
+        builder.Property(v => v.GarageId)
+            .IsRequired();
+
+        builder.HasOne(v => v.Garage)
+            .WithMany(g => g.Vehicles)
+            .HasForeignKey(v => v.GarageId);
+
         builder.HasIndex(v => new { v.Plate, v.UserId })
             .IsUnique();
     }
